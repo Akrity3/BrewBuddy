@@ -1,4 +1,4 @@
-package com.example.brewbuddy
+package com.example.brewbuddy.view
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,14 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.brewbuddy.ui.theme.BrewBuddyTheme
 
-class DashboardActivity : ComponentActivity() {
+class RegistrationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             BrewBuddyTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting3(
+                    Greeting2(
                         name = "Android",
                         modifier = Modifier.padding(innerPadding)
                     )
@@ -31,7 +31,7 @@ class DashboardActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting3(name: String, modifier: Modifier = Modifier) {
+fun Greeting2(name: String, modifier: Modifier = Modifier) {
     Text(
         text = "Hello $name!",
         modifier = modifier
@@ -40,8 +40,8 @@ fun Greeting3(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview3() {
+fun GreetingPreview2() {
     BrewBuddyTheme {
-        Greeting3("Android")
+        Greeting2("Android")
     }
 }

@@ -1,7 +1,8 @@
 <resources>
-    <string name="app_name">BrewBuddy</string>
-    <string name="title_activity_login">LoginActivity</string>
-    <string name="title_activity_splash_screen">SplashScreen</string>
-    <string name="title_activity_registration">RegistrationActivity</string>
-    <string name="title_activity_dashboard">DashboardActivity</string>
+    <string name="app_name" translatable="false">BrewBuddy</string>
+    <string name="title_activity_login" translatable="false">LoginActivity</string>
+    <string name="title_activity_on_boarding" translatable="false">OnboardingActivity</string>
+    <string name="title_activity_dashboard" translatable="false">DashboardActivity</string>
+    <string name="title_activity_splash" translatable="false">SplashScreenActivity</string>
+    <string name="title_activity_registration" translatable="false">RegistrationActivity</string>
 </resources>
