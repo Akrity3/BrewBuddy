@@ -5,4 +5,5 @@
     <string name="title_activity_dashboard" translatable="false">DashboardActivity</string>
     <string name="title_activity_splash" translatable="false">SplashScreenActivity</string>
     <string name="title_activity_registration" translatable="false">RegistrationActivity</string>
+    <string name="title_activity_forgot_password">ForgotPassword</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.example.brewbuddy.view
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -29,7 +30,7 @@ import com.example.brewbuddy.ui.theme.BrewBuddyTheme
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge() //to make full screen
         setContent {
             BrewBuddyTheme {
                 LoginBody()
@@ -67,12 +68,12 @@ fun LoginBody() {
 
     // Animate Login Button alpha and scale based on input fields
     val buttonAlpha by animateFloatAsState(
-        targetValue = if (isCredentialsEntered) 1f else 0.5f,
+        targetValue = if (isCredentialsEntered) 1f else 0.8f,
         animationSpec = tween(durationMillis = 400),
         label = "buttonAlpha"
     )
     val buttonScale by animateFloatAsState(
-        targetValue = if (isCredentialsEntered) 1f else 0.95f,
+        targetValue = if (isCredentialsEntered) 1f else 0.99f,
         animationSpec = tween(durationMillis = 400),
         label = "buttonScale"
     )
@@ -188,9 +189,9 @@ fun LoginBody() {
             )
             Spacer(Modifier.height(36.dp))
 
-            // Main white card with opening animation & 10dp rounded corners
+            // Main white card with opening animation & rounded corners
             Card(
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(40.dp),
                 elevation = CardDefaults.cardElevation(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -296,7 +297,10 @@ fun LoginBody() {
                         )
                         Spacer(Modifier.width(7.dp))
                         TextButton(
-                            onClick = { /* Navigate to RegistrationActivity */ }
+                            onClick = { /* Navigate to RegistrationActivity */
+                                context.startActivity(Intent(context, RegistrationActivity::class.java))
+                                (context as? Activity)?.finish()
+                            }
                         ) {
                             Text(
                                 "Register",
@@ -325,6 +329,8 @@ fun LoginBody() {
                         onClick = {
                             isLoading = true
                             // Your login logic here
+                            context.startActivity(Intent(context, DashboardActivity::class.java))
+                            (context as? Activity)?.finish()
                         },
                         modifier = Modifier
                             .fillMaxWidth(0.72f)
