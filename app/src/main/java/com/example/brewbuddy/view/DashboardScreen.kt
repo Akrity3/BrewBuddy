@@ -181,3 +181,49 @@ fun DashboardScreen(
     }
 }
 
+@Composable
+fun BrewItem(
+    brew: BrewData,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onClick: () -> Unit,
+    cardBackground: Color,
+    cardTextColor: Color,
+    cardSecondaryColor: Color
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(16.dp))
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = cardBackground),
+        elevation = CardDefaults.cardElevation(8.dp),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, cardSecondaryColor.copy(alpha = 0.15f))
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Coffee,
+                contentDescription = null,
+                tint = cardSecondaryColor,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = brew.name, color = cardTextColor, fontSize = 18.sp)
+                Text(text = brew.notes, maxLines = 1, color = cardSecondaryColor, fontSize = 14.sp)
+                Text(text = "Rating: ${brew.rating}", fontSize = 13.sp, color = cardSecondaryColor)
+            }
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit Brew", tint = cardSecondaryColor)
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete Brew", tint = Color(0xFFD32F2F))
+            }
+        }
+    }
+}
+
