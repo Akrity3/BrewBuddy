@@ -267,3 +267,98 @@ fun NotePopup(note: BrewData?, onDismiss: () -> Unit) {
         }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BrewDialog(
+    initialData: BrewData,
+    onDismiss: () -> Unit,
+    onSave: (BrewData) -> Unit,
+    textColorPrimary: Color,
+    textColorSecondary: Color,
+    backgroundColor: Color
+) {
+    var name by remember { mutableStateOf(initialData.name) }
+    var notes by remember { mutableStateOf(initialData.notes) }
+    var rating by remember { mutableStateOf(initialData.rating.toString()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val ratingDouble = rating.toDoubleOrNull() ?: -1.0
+                    if (name.isNotBlank() && ratingDouble in 0.0..5.0) {
+                        onSave(BrewData(key = initialData.key, name = name, notes = notes, rating = ratingDouble))
+                    }
+                }
+            ) {
+                Text("Save", color = textColorPrimary)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = textColorPrimary)
+            }
+        },
+        title = {
+            Text(if (initialData.name.isBlank()) "Add Brew" else "Edit Brew", color = textColorPrimary)
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Brew Name", color = textColorPrimary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = textColorPrimary,
+                        unfocusedBorderColor = textColorSecondary,
+                        focusedLabelColor = textColorPrimary,
+                        unfocusedLabelColor = textColorSecondary,
+                        cursorColor = textColorPrimary,
+                        focusedLeadingIconColor = textColorPrimary,
+                        focusedTextColor = textColorPrimary,
+                        unfocusedTextColor = textColorSecondary
+                    )
+                )
+                OutlinedTextField(
+                    value = notes,
+                    onValueChange = { notes = it },
+                    label = { Text("Notes", color = textColorPrimary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = textColorPrimary,
+                        unfocusedBorderColor = textColorSecondary,
+                        focusedLabelColor = textColorPrimary,
+                        unfocusedLabelColor = textColorSecondary,
+                        cursorColor = textColorPrimary,
+                        focusedLeadingIconColor = textColorPrimary,
+                        focusedTextColor = textColorPrimary,
+                        unfocusedTextColor = textColorSecondary
+                    )
+                )
+                OutlinedTextField(
+                    value = rating,
+                    onValueChange = { rating = it },
+                    label = { Text("Rating (0 to 5)", color = textColorPrimary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = textColorPrimary,
+                        unfocusedBorderColor = textColorSecondary,
+                        focusedLabelColor = textColorPrimary,
+                        unfocusedLabelColor = textColorSecondary,
+                        cursorColor = textColorPrimary,
+                        focusedLeadingIconColor = textColorPrimary,
+                        focusedTextColor = textColorPrimary,
+                        unfocusedTextColor = textColorSecondary
+                    )
+                )
+            }
+        },
+        containerColor = backgroundColor
+    )
+}
+
