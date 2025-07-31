@@ -227,3 +227,43 @@ fun BrewItem(
     }
 }
 
+@Composable
+fun NotePopup(note: BrewData?, onDismiss: () -> Unit) {
+    if (note != null) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF733708))
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp)
+                ) {
+                    Text(
+                        text = note.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = note.notes,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "Rating: ${note.rating}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
+                        Text("Close")
+                    }
+                }
+            }
+        }
+    }
+}
