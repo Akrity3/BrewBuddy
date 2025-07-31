@@ -11,8 +11,9 @@ composeBom = "2024.09.00"
 materialIconsExtended = "1.5.4"
 composeAnimation = "1.5.4"
 navigationCompose = "2.7.6"
-firebaseAuth = "22.3.1"
-firebaseDatabase = "21.0.0"
+googleGmsGoogleServices = "4.4.3"
+firebaseAuthVersion = "24.0.0"
+firebaseDatabaseVersion = "22.0.0"
 
 
 [libraries]
@@ -33,12 +34,13 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "composeAnimation" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
-#firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
-#firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuthVersion" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabaseVersion" }
 
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 

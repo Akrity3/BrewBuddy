@@ -25,88 +25,110 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.brewbuddy.ui.theme.BrewBuddyTheme
+import com.example.brewbuddy.viewmodel.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class LoginActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() //to make full screen
+        enableEdgeToEdge() // Make content fullscreen edge-to-edge
+
         setContent {
             BrewBuddyTheme {
                 LoginBody()
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginBody() {
     val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel()
 
+    // Collect user and error state from AuthViewModel
+    val user by authViewModel.user.collectAsState()
+    val authError by authViewModel.authError.collectAsState()
+
+    // UI state - input fields, visibility, loading
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
-    // Opening animation for welcome card
+    // Animation state for card appearance
     var cardAppeared by remember { mutableStateOf(false) }
     val cardScale by animateFloatAsState(
         targetValue = if (cardAppeared) 1f else 0.7f,
-        animationSpec = tween(durationMillis = 700, easing = FastOutSlowInEasing),
-        label = "cardScale"
+        animationSpec = tween(durationMillis = 700, easing = FastOutSlowInEasing)
     )
     val cardAlpha by animateFloatAsState(
         targetValue = if (cardAppeared) 1f else 0f,
-        animationSpec = tween(durationMillis = 700, easing = LinearEasing),
-        label = "cardAlpha"
+        animationSpec = tween(durationMillis = 700, easing = LinearEasing)
     )
 
-    // Determine if credentials are entered
-    val isCredentialsEntered = email.isNotBlank() && password.isNotBlank()
+    // On user login success, navigate to dashboard and finish this activity
+    LaunchedEffect(user) {
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (user != null && firebaseUser != null) {
+            isLoading = false
+            context.startActivity(Intent(context, DashboardActivity::class.java))
+            (context as? Activity)?.finish()
+        }
+    }
 
-    // Animate Login Button alpha and scale based on input fields
-    val buttonAlpha by animateFloatAsState(
-        targetValue = if (isCredentialsEntered) 1f else 0.8f,
-        animationSpec = tween(durationMillis = 400),
-        label = "buttonAlpha"
-    )
-    val buttonScale by animateFloatAsState(
-        targetValue = if (isCredentialsEntered) 1f else 0.99f,
-        animationSpec = tween(durationMillis = 400),
-        label = "buttonScale"
-    )
+    // In your LoginActivity.kt (or ViewModel, preferred), after login:
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+    if (uid != null) {
+        FirebaseDatabase.getInstance().getReference("users").child(uid)
+            .get().addOnSuccessListener { dataSnapshot ->
+                val userProfile = dataSnapshot.getValue(Map::class.java)
+                // Use userProfile data as needed (e.g. username, email)
+            }
+    }
 
-    // Button content color: white if enabled, orange if not
-    val loginContentColor = if (isCredentialsEntered) Color.White else Color(0xFFE66111)
 
-    // Logo "steam" animation - vertical up/down
-    val infiniteTransition = rememberInfiniteTransition(label = "login_logo_updown")
-    val offsetY by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = -16f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "steam_updown"
-    )
+    // Reset loading when authentication error received
+    LaunchedEffect(authError) {
+        if (!authError.isNullOrEmpty()) {
+            isLoading = false
+        }
+    }
 
-    // Background floating cups animation offset (for gentle vertical movement)
-    val cupBgOffset by infiniteTransition.animateFloat(
-        initialValue = 0f, targetValue = 800f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(22000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "cup_float_bg"
-    )
-
+    // Play card appearance animation at startup
     LaunchedEffect(Unit) {
         cardAppeared = true
     }
 
-    // Specifications for cups: size, alpha, alignment
+    val isCredentialsEntered = email.isNotBlank() && password.isNotBlank()
+    val buttonAlpha by animateFloatAsState(
+        targetValue = if (isCredentialsEntered) 1f else 0.8f,
+        animationSpec = tween(durationMillis = 400)
+    )
+    val buttonScale by animateFloatAsState(
+        targetValue = if (isCredentialsEntered) 1f else 0.99f,
+        animationSpec = tween(durationMillis = 400)
+    )
+    val loginContentColor = if (isCredentialsEntered) Color.White else Color(0xFFE66111)
+
+    // Logo steam vertical animation (optional aesthetic)
+    val infiniteTransition = rememberInfiniteTransition()
+    val offsetY by infiniteTransition.animateFloat(
+        initialValue = 0f, targetValue = -16f,
+        animationSpec = infiniteRepeatable(tween(1500, easing = LinearEasing), RepeatMode.Reverse)
+    )
+
+    // Background floating cups animation offset (optional)
+    val cupBgOffset by infiniteTransition.animateFloat(
+        initialValue = 0f, targetValue = 800f,
+        animationSpec = infiniteRepeatable(tween(22000, easing = LinearEasing), RepeatMode.Restart)
+    )
+
     val cupSpecs = listOf(
         Triple(140.dp, 0.04f, Alignment.BottomStart),
         Triple(155.dp, 0.08f, Alignment.BottomEnd),
@@ -118,6 +140,7 @@ fun LoginBody() {
         Triple(245.dp, 0.32f, Alignment.BottomCenter)
     )
 
+    // Main container with background and floating cups
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -131,10 +154,10 @@ fun LoginBody() {
                 )
             )
     ) {
-        // Background floating cups with vertical floating animation
+        // Background cups animation
         cupSpecs.forEachIndexed { i, (size, alpha, alignment) ->
             Icon(
-                imageVector = Icons.Default.Coffee,
+                Icons.Default.Coffee,
                 contentDescription = null,
                 tint = Color(0xFF8B4513).copy(alpha = alpha),
                 modifier = Modifier
@@ -147,9 +170,7 @@ fun LoginBody() {
             )
         }
 
-
-
-        // Main content column with your login UI
+        // Column with login UI
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -157,7 +178,7 @@ fun LoginBody() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Animated logo card - coffee mug with steam animation
+            // Animated logo card
             Card(
                 shape = RoundedCornerShape(40),
                 elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
@@ -168,87 +189,91 @@ fun LoginBody() {
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     Icon(
-                        imageVector = Icons.Default.Coffee,
+                        Icons.Default.Coffee,
                         contentDescription = "Coffee Mug Logo",
                         modifier = Modifier.size(60.dp),
                         tint = Color(0xFF8B4513)
                     )
                 }
             }
+
             Spacer(Modifier.height(22.dp))
+
             Text(
-                text = "BrewBuddy Login",
+                "BrewBuddy Login",
                 fontSize = 34.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFFD2691E)
             )
             Text(
-                text = "Your Coffee Journal",
+                "Your Coffee Journal",
                 fontSize = 16.sp,
                 color = Color(0xFF8B4513).copy(alpha = 0.73f)
             )
+
             Spacer(Modifier.height(36.dp))
 
-            // Main white card with opening animation & rounded corners
+            // Login form card with opening animation
             Card(
                 shape = RoundedCornerShape(40.dp),
                 elevation = CardDefaults.cardElevation(14.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .graphicsLayer {
+                        alpha = cardAlpha
                         scaleX = cardScale
                         scaleY = cardScale
-                        alpha = cardAlpha
                     },
                 colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.97f))
             ) {
                 Column(
-                    modifier = Modifier.padding(28.dp),
+                    Modifier.padding(28.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Welcome Back!",
+                        "Welcome Back!",
                         fontSize = 23.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF381911),
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
+
+                    // Email input
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
                         label = { Text("Email", color = Color(0xFFD2691E)) },
                         leadingIcon = {
-                            Icon(Icons.Default.Email, contentDescription = "Email", tint = Color(0xFF8B4513))
+                            Icon(Icons.Default.Email, contentDescription = "Email Icon", tint = Color(0xFF8B4513))
                         },
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
                             color = Color(0xFF422010),
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         ),
-                        singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                         shape = RoundedCornerShape(15.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD2691E),
                             unfocusedBorderColor = Color(0xFF8B4513),
                             focusedLabelColor = Color(0xFFD2691E),
                             unfocusedLabelColor = Color(0xFF8B4513),
-                            focusedLeadingIconColor = Color(0xFFD2691E),
                             cursorColor = Color(0xFFD2691E),
-                            unfocusedTextColor = Color(0xFF4D2D18),
-                            focusedTextColor = Color(0xFF381911)
+                            focusedLeadingIconColor = Color(0xFFD2691E),
+                            focusedTextColor = Color(0xFFD2691E),
+                            unfocusedTextColor = Color(0xFF4D2D18)
                         )
                     )
 
+                    // Password input
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Password", color = Color(0xFFD2691E)) },
                         leadingIcon = {
-                            Icon(Icons.Default.Lock, contentDescription = "Password", tint = Color(0xFF8B4513))
+                            Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = Color(0xFF8B4513))
                         },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -265,73 +290,42 @@ fun LoginBody() {
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
                         ),
-                        singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
                         shape = RoundedCornerShape(15.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD2691E),
                             unfocusedBorderColor = Color(0xFF8B4513),
                             focusedLabelColor = Color(0xFFD2691E),
                             unfocusedLabelColor = Color(0xFF8B4513),
-                            focusedLeadingIconColor = Color(0xFFD2691E),
                             cursorColor = Color(0xFFD2691E),
-                            unfocusedTextColor = Color(0xFF4D2D18),
-                            focusedTextColor = Color(0xFF381911)
+                            focusedLeadingIconColor = Color(0xFFD2691E),
+                            focusedTextColor = Color(0xFFD2691E),
+                            unfocusedTextColor = Color(0xFF4D2D18)
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(18.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            "Don't have an account?",
-                            color = Color(0xFF8B4513),
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(Modifier.width(7.dp))
-                        TextButton(
-                            onClick = { /* Navigate to RegistrationActivity */
-                                context.startActivity(Intent(context, RegistrationActivity::class.java))
-                                (context as? Activity)?.finish()
-                            }
-                        ) {
-                            Text(
-                                "Register",
-                                color = Color(0xFFD2691E),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(
-                        onClick = { /* TODO: Forgot password */ },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text(
-                            "Forgot Password?",
-                            color = Color(0xFF8B4513),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(Modifier.height(18.dp))
 
-                    // Login button with changing text/icon visibility/color
+                    // Login Button
+                    val isCredentialsEntered = email.isNotBlank() && password.isNotBlank()
+                    val buttonAlpha by animateFloatAsState(
+                        targetValue = if (isCredentialsEntered) 1f else 0.8f,
+                        animationSpec = tween(durationMillis = 400)
+                    )
+                    val buttonScale by animateFloatAsState(
+                        targetValue = if (isCredentialsEntered) 1f else 0.99f,
+                        animationSpec = tween(durationMillis = 400)
+                    )
+                    val loginContentColor = if (isCredentialsEntered) Color.White else Color(0xFFE66111)
                     Button(
                         onClick = {
                             isLoading = true
-                            // Your login logic here
-                            context.startActivity(Intent(context, DashboardActivity::class.java))
-                            (context as? Activity)?.finish()
+                            authViewModel.login(email.trim(), password.trim())
                         },
+                        enabled = isCredentialsEntered && !isLoading,
+                        shape = RoundedCornerShape(15.dp),
                         modifier = Modifier
                             .fillMaxWidth(0.72f)
                             .height(44.dp)
@@ -340,12 +334,10 @@ fun LoginBody() {
                                 scaleX = buttonScale
                                 scaleY = buttonScale
                             },
-                        shape = RoundedCornerShape(15.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFD2691E),
                             disabledContainerColor = Color(0xFFD2691E).copy(alpha = 0.6f)
-                        ),
-                        enabled = isCredentialsEntered && !isLoading
+                        )
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
@@ -358,14 +350,14 @@ fun LoginBody() {
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Login,
+                                    Icons.Default.Login,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp),
                                     tint = loginContentColor
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(Modifier.width(8.dp))
                                 Text(
-                                    text = "Login",
+                                    "Login",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = loginContentColor
@@ -373,8 +365,51 @@ fun LoginBody() {
                             }
                         }
                     }
+
+                    // Show authentication error if any
+                    if (!authError.isNullOrEmpty()) {
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = authError ?: "",
+                            color = Color.Red,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Navigate to Registration screen
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Don't have an account?",
+                            color = Color(0xFF8B4513),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(Modifier.width(7.dp))
+                        TextButton(onClick = {
+                            context.startActivity(Intent(context, RegistrationActivity::class.java))
+                            (context as? Activity)?.finish()
+                        }) {
+                            Text(
+                                "Register",
+                                color = Color(0xFFD2691E),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
                 }
             }
         }
     }
 }
+
+//private var isLoading by mutableStateOf(false)

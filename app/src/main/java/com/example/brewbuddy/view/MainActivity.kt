@@ -1,4 +1,4 @@
-package com.example.brewbuddy
+package com.example.brewbuddy.view
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
