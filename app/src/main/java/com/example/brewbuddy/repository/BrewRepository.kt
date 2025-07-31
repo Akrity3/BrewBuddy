@@ -71,4 +71,10 @@ class BrewRepository {
     }
 
     // Clean up listener to avoid memory leaks.
+    fun clearListener() {
+        brewsListener?.let {
+            brewsRef?.removeEventListener(it)
+        }
+        brewsListener = null
+    }
 }
